@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 quiet_clock/hook.py",
+            "timeoutSec": 2,
+            "async": false,
+            "statusMessage": "Quiet Clock"
+          }
+        ]
+      }
+    ]
+  }
+}

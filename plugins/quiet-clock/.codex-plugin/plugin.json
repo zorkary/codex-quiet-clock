@@ -1,0 +1,42 @@
+{
+  "name": "quiet-clock",
+  "version": "0.1.1",
+  "description": "Local read-only timing context hook and MCP for Codex.",
+  "author": {
+    "name": "Quiet Clock contributors",
+    "url": "https://github.com/zorkary/codex-quiet-clock"
+  },
+  "homepage": "https://github.com/zorkary/codex-quiet-clock",
+  "repository": "https://github.com/zorkary/codex-quiet-clock",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "mcp",
+    "hooks",
+    "time",
+    "timeline"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Quiet Clock",
+    "shortDescription": "Thread-time awareness for Codex",
+    "longDescription": "Quiet Clock gives Codex compact timing context through a UserPromptSubmit hook and read-only timeline tools through a local stdio MCP server. It has no daemon, network service, or runtime write path.",
+    "developerName": "Quiet Clock contributors",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "websiteURL": "https://github.com/zorkary/codex-quiet-clock",
+    "privacyPolicyURL": "https://github.com/zorkary/codex-quiet-clock/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/zorkary/codex-quiet-clock/blob/main/LICENSE",
+    "defaultPrompt": [
+      "How long ago did I say that?",
+      "Did this thread go stale overnight?",
+      "Find when I first mentioned this."
+    ],
+    "brandColor": "#334155",
+    "screenshots": []
+  }
+}

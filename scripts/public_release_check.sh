@@ -7,6 +7,7 @@ cd "$repo_root"
 python3 -m unittest discover -s tests -v
 bash scripts/smoke_hook.sh >/tmp/quiet-clock-smoke-hook.out
 bash scripts/smoke_mcp.sh >/tmp/quiet-clock-smoke-mcp.out
+bash scripts/check_plugin_package.sh
 git diff --check
 bash scripts/privacy_scan.sh
 

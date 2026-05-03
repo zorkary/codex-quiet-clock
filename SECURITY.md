@@ -8,6 +8,8 @@ Quiet Clock can expose local Codex transcript snippets to the active Codex model
 
 The main risks are accidental over-sharing from transcript snippets and accidental publication of local runtime files. The repo includes privacy and release checks to reduce those risks. Timeline tools refuse arbitrary transcript paths and only read Codex rollout JSONL files under the configured Codex sessions root.
 
+Plugin packaging does not expand this threat model. It only points Codex at the same local hook and stdio MCP entrypoints.
+
 ## Hard Boundaries
 
 Quiet Clock should not add:

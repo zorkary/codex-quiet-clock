@@ -1,0 +1,20 @@
+{
+  "name": "codex-quiet-clock",
+  "interface": {
+    "displayName": "Quiet Clock"
+  },
+  "plugins": [
+    {
+      "name": "quiet-clock",
+      "source": {
+        "source": "local",
+        "path": "./plugins/quiet-clock"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -16,6 +16,8 @@ The `now` tool reads no transcript data.
 
 During normal hook and MCP operation, Quiet Clock writes nothing.
 
+The plugin package is only a distribution wrapper around the same local hook and MCP server. It does not change what Quiet Clock reads or writes during normal operation.
+
 The install scripts intentionally update local Codex configuration:
 
 - `scripts/install_hook.sh` adds a marked hook block to `~/.codex/config.toml`.
