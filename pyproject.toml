@@ -1,0 +1,10 @@
+[project]
+name = "quiet-clock"
+version = "0.1.0"
+description = "Local read-only timing context hook and MCP for Codex."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.quiet-clock]
+mcp_server_name = "quiet_clock"
+transport = "stdio"

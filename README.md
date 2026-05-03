@@ -1,0 +1,211 @@
+# Quiet Clock
+
+A local hook + read-only MCP that gives Codex thread-time awareness.
+
+Quiet Clock helps Codex reason about recency, stale threads, local dates, and earlier messages without cluttering the visible chat. It is intentionally small: no daemon, no network service, no memory system, no background watcher.
+
+## What It Adds
+
+Quiet Clock has two pieces:
+
+- A Codex `UserPromptSubmit` hook that injects compact timing context on each user prompt.
+- A local stdio MCP server named `quiet_clock` that provides timeline/history tools when exact chronology matters.
+
+The hook gives Codex a small note with current UTC/local time, timezone, local date, session/thread id, turn id, elapsed time since the previous user prompt, and stale/date-boundary hints.
+
+The MCP provides read-only tools:
+
+- `now` for current UTC/local time.
+- `thread_timeline` for compact chronology.
+- `elapsed_since` for elapsed time since a message, turn, or query match.
+- `find_message` for prior message lookup.
+- `staleness_report` for long pauses, day changes, and exact-date hints.
+
+## Demo
+
+Hook context looks like this in model-visible context:
+
+```text
+Quiet Clock is active.
+Now UTC: 2026-05-03T06:18:13Z.
+Now local: 2026-05-02T23:18:13-07:00 (America/Los_Angeles); local date 2026-05-02.
+Session/thread id: 019...
+Current turn id: 019...
+Elapsed since previous user prompt: 20m 45s.
+Use the quiet_clock MCP instead of guessing for timing/history questions.
+```
+
+A tool result from `quiet_clock.now` looks like:
+
+```json
+{
+  "ok": true,
+  "time": {
+    "utc": "2026-05-03T06:18:13Z",
+    "local": "2026-05-02T23:18:13-07:00",
+    "timezone": "America/Los_Angeles",
+    "local_date": "2026-05-02"
+  }
+}
+```
+
+## Requirements
+
+- macOS or another Unix-like environment.
+- Python 3.11+.
+- Codex CLI/app with hooks and MCP support.
+- No Python package dependencies.
+
+## Install From A Fresh Clone
+
+```bash
+git clone https://github.com/zorkary/codex-quiet-clock.git quiet-clock
+cd quiet-clock
+python3 -m unittest discover -s tests -v
+scripts/install_hook.sh
+scripts/install_mcp.sh
+```
+
+The hook installer writes a marked Quiet Clock block to `~/.codex/config.toml`. The MCP installer registers the server equivalent to:
+
+```bash
+codex mcp add quiet_clock -- python3 /path/to/quiet-clock/quiet_clock/mcp_server.py
+```
+
+If you move the checkout, rerun both installers.
+
+## Verify Installation
+
+```bash
+python3 -m unittest discover -s tests -v
+scripts/smoke_hook.sh
+scripts/smoke_mcp.sh
+codex mcp list
+```
+
+Expected MCP list entry:
+
+```text
+quiet_clock   python3   /path/to/quiet-clock/quiet_clock/mcp_server.py   enabled
+```
+
+Live hook probe:
+
+```bash
+codex exec --ephemeral --sandbox read-only "If Quiet Clock hook context is visible, answer exactly QUIET_CLOCK_VISIBLE. Otherwise answer NO."
+```
+
+Live MCP probe:
+
+```bash
+codex exec --ephemeral --sandbox read-only "Use the quiet_clock.now tool once. Then answer TOOL_USED if it succeeded, otherwise TOOL_FAILED."
+```
+
+If `quiet_clock` does not appear in an already-open Codex chat, restart Codex or start a fresh chat.
+
+## How To Use It
+
+Usually you do not ask for Quiet Clock directly. The hook gives Codex baseline timing context automatically.
+
+Ask explicit timing questions when needed:
+
+```text
+how long ago did I say that?
+```
+
+```text
+find when I first mentioned the MCP cancellation issue
+```
+
+```text
+did this thread go stale overnight?
+```
+
+Codex should use the MCP tools instead of guessing when exact timing or chronology matters.
+
+## Privacy Defaults
+
+Timeline tools should receive the session/thread id from the hook context. They do not silently fall back to the latest local thread unless `allow_latest=true` is passed explicitly.
+
+Timeline outputs support:
+
+- `include_snippets=false` to suppress message snippets.
+- `snippet_chars` to cap snippet length.
+- `debug_paths=true` to include raw transcript paths only when debugging.
+
+See `PRIVACY.md` for the full privacy model.
+
+## Uninstall
+
+Remove the hook block:
+
+```bash
+scripts/uninstall_hook.sh
+```
+
+Remove the MCP registration:
+
+```bash
+codex mcp remove quiet_clock
+```
+
+## Development
+
+```bash
+python3 -m unittest discover -s tests -v
+scripts/smoke_hook.sh
+scripts/smoke_mcp.sh
+scripts/public_release_check.sh
+```
+
+Main files:
+
+- `quiet_clock/hook.py`: Codex hook entrypoint.
+- `quiet_clock/mcp_server.py`: stdio MCP server.
+- `quiet_clock/transcript.py`: local Codex transcript/session readers.
+- `quiet_clock/time_context.py`: timing context and stale/date-boundary logic.
+
+## Safety Model
+
+Normal Quiet Clock operation is read-only.
+
+It may read Codex hook input, local Codex transcript/session files, and the local Codex session index in read-only SQLite mode.
+
+It does not call the network, run a daemon, create cron jobs, create launch agents, run watchers, write memory, mutate repo files during normal use, push to GitHub, or contact third parties.
+
+The only intentional writes are install/uninstall/configuration operations.
+
+## Runtime Notes
+
+Quiet Clock uses hooks and MCP because those extension points are available today. In a future runtime, basic message timing could be exposed as hidden metadata directly, while deeper chronology remains tool-backed. See `docs/runtime-notes.md`.
+
+## Troubleshooting
+
+### MCP tool calls are cancelled
+
+Make sure tools include read-only MCP annotations:
+
+```json
+{
+  "readOnlyHint": true,
+  "destructiveHint": false,
+  "idempotentHint": true,
+  "openWorldHint": false
+}
+```
+
+Without those annotations, Codex may list tools but cancel calls before sending `tools/call` to the server.
+
+### Hook is not visible
+
+Run `scripts/smoke_hook.sh`, then confirm the marked hook block exists in `~/.codex/config.toml`.
+
+### MCP is registered but unavailable in a chat
+
+Run `codex mcp list`. If `quiet_clock` appears there, restart Codex or start a fresh chat. Existing sessions may not pick up newly registered MCP namespaces immediately.
+
+## Limits
+
+Quiet Clock does not add true hidden per-message envelope metadata to Codex internals. It uses Codex hook `additionalContext`, which is model-visible context but not normal chat text.
+
+The MCP reconstructs timeline information from local Codex session state and JSONL transcript files. If those files are unavailable, Quiet Clock returns the best available timing context rather than blocking the turn.
