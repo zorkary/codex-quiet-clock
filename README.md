@@ -86,6 +86,15 @@ This registers the Quiet Clock plugin marketplace with Codex. The plugin package
 
 As of Codex `0.128.0-alpha.1`, live validation confirms the plugin-packaged MCP can load from an installed plugin cache, but plugin-packaged `UserPromptSubmit` hook activation is not yet proven in `codex exec`. Use the direct install path above for complete Quiet Clock behavior today.
 
+Observed plugin-runtime caveats:
+
+- `codex plugin marketplace add` for a local marketplace registers the marketplace in Codex config; it does not, by itself, activate Quiet Clock in `codex exec`.
+- `codex plugin marketplace upgrade` currently rejects local marketplaces because it expects a Git marketplace.
+- A minimal hook-only plugin with `hooks/hooks.json` did not execute its `UserPromptSubmit` hook in `codex exec`, even with the plugin enabled and installed into the expected cache path.
+- The same hook logic works through direct Codex hook configuration.
+
+For now, treat plugin packaging as a compatibility experiment and use the direct installer scripts for the working product.
+
 ## Verify Installation
 
 ```bash
