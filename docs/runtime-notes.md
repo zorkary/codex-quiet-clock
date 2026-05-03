@@ -2,7 +2,7 @@
 
 Quiet Clock uses Codex hooks and MCP because those extension points exist today. It does not assume Codex lacks timestamps internally; local session logs can already contain timestamped events. The hook provides lightweight, predictable timing context at prompt submission time; the MCP provides deeper chronology lookup only when needed.
 
-This split keeps the default context small while making exact timing available through an explicit read-only interface instead of ad hoc transcript spelunking.
+This split keeps the default context small while making exact timing available through an explicit read-only interface instead of ad hoc transcript spelunking. In baseline Codex sessions without Quiet Clock, the model may know message order and current environment dates, or infer timing from file/tool artifacts, but it should not be assumed to have reliable per-message chat timestamps in active context.
 
 A future Codex runtime could expose basic timing as hidden message metadata or a native transcript/timeline API directly:
 
@@ -26,4 +26,4 @@ Codex plugin docs describe bundled MCP servers and lifecycle hook config, but cu
 - Plugin-packaged `UserPromptSubmit` hooks did not execute in `codex exec` during controlled marker-file tests.
 - Local `codex plugin marketplace add` registers the marketplace, but does not appear to install or enable local plugin components by itself.
 
-Until that runtime path is clearer, Quiet Clock treats plugin packaging as experimental and keeps direct hook/MCP installation as the supported path.
+This appears to match upstream issue [openai/codex#16430](https://github.com/openai/codex/issues/16430). Until that runtime path is clearer, Quiet Clock treats plugin packaging as experimental and keeps direct hook/MCP installation as the supported path.

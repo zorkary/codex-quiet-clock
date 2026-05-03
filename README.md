@@ -2,7 +2,7 @@
 
 A local hook + read-only MCP that makes Codex thread timing predictable and model-usable.
 
-Quiet Clock does not claim Codex lacks timestamps. Codex may already record timing in local session logs or runtime state. Quiet Clock adds a predictable model-facing layer: a tiny hook for current timing context and a read-only lookup surface for exact chronology when needed. It is intentionally small: no daemon, no network service, no memory system, no background watcher.
+Quiet Clock does not claim Codex lacks timestamps. Codex may already record timing in local session logs or runtime state. Quiet Clock adds a predictable model-facing layer: a tiny hook for current timing context and a read-only lookup surface for exact chronology when needed. Without a layer like this, agents may infer timing from message order, current environment dates, or file/tool artifacts, but that is not the same as reliable per-message chat chronology. It is intentionally small: no daemon, no network service, no memory system, no background watcher.
 
 ## What It Adds
 
@@ -84,7 +84,7 @@ codex plugin marketplace add zorkary/codex-quiet-clock
 
 This registers the Quiet Clock plugin marketplace with Codex. The plugin package is self-contained and includes bundled lifecycle config (`./hooks/hooks.json`) plus a bundled stdio MCP server config (`./.mcp.json`).
 
-As of Codex `0.128.0-alpha.1`, live validation confirms the plugin-packaged MCP can load from an installed plugin cache, but plugin-packaged `UserPromptSubmit` hook activation is not yet proven in `codex exec`. Use the direct install path above for complete Quiet Clock behavior today.
+As of Codex `0.128.0-alpha.1`, live validation confirms the plugin-packaged MCP can load from an installed plugin cache, but plugin-packaged `UserPromptSubmit` hook activation is not yet proven in `codex exec`. This appears to match upstream issue [openai/codex#16430](https://github.com/openai/codex/issues/16430). Use the direct install path above for complete Quiet Clock behavior today.
 
 Observed plugin-runtime caveats:
 
