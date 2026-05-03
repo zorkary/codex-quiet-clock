@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -27,7 +28,9 @@ class TimeContextTests(unittest.TestCase):
 
     def test_long_pause_and_date_boundary_notes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            transcript = Path(tmp) / "rollout.jsonl"
+            transcript_root = Path(tmp) / "sessions"
+            transcript_root.mkdir()
+            transcript = transcript_root / "rollout-test.jsonl"
             transcript.write_text(
                 json.dumps(
                     {
@@ -39,10 +42,18 @@ class TimeContextTests(unittest.TestCase):
                 + "\n"
             )
             now = datetime(2026, 5, 3, 18, 0, 0, tzinfo=timezone.utc)
-            context = build_hook_context({"transcript_path": str(transcript)}, now=now)
+            with patch("quiet_clock.transcript.SESSIONS_ROOT", transcript_root):
+                context = build_hook_context({"transcript_path": str(transcript)}, now=now)
             text = render_hook_context(context)
             self.assertIn("Elapsed since previous user prompt", text)
             self.assertTrue(any("Long pause" in note for note in context["notes"]))
+
+    def test_hook_refuses_outside_transcript_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            transcript = Path(tmp) / "rollout-test.jsonl"
+            transcript.write_text("")
+            context = build_hook_context({"transcript_path": str(transcript)})
+            self.assertEqual(context["transcript_status"], "refused: outside Codex sessions root or not a rollout JSONL file")
 
 
 if __name__ == "__main__":

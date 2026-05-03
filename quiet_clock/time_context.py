@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .transcript import TimelineItem, load_timeline
+from .transcript import TimelineItem, load_timeline, resolve_transcript_path
 
 STALE_AFTER_SECONDS = 6 * 60 * 60
 LONG_PAUSE_SECONDS = 60 * 60
@@ -85,11 +85,15 @@ def build_hook_context(hook_input: dict[str, Any], now: datetime | None = None) 
     timeline: list[TimelineItem] = []
     transcript_status = "not provided"
     if transcript_path:
-        try:
-            timeline = load_timeline(transcript_path, include_tools=False, max_bytes=5_000_000)
-            transcript_status = "ok"
-        except Exception as exc:  # pragma: no cover - defensive hook path
-            transcript_status = f"unavailable: {type(exc).__name__}: {exc}"
+        resolved_transcript_path = resolve_transcript_path(transcript_path)
+        if not resolved_transcript_path:
+            transcript_status = "refused: outside Codex sessions root or not a rollout JSONL file"
+        else:
+            try:
+                timeline = load_timeline(resolved_transcript_path, include_tools=False, max_bytes=5_000_000)
+                transcript_status = "ok"
+            except Exception as exc:  # pragma: no cover - defensive hook path
+                transcript_status = f"unavailable: {type(exc).__name__}: {exc}"
 
     previous_user = latest_user_before(timeline, now)
     notes: list[str] = []

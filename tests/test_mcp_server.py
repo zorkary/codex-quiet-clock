@@ -45,7 +45,9 @@ class McpServerTests(unittest.TestCase):
 
     def test_timeline_suppresses_snippets_and_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "rollout-test.jsonl"
+            sessions_root = Path(tmp) / "sessions"
+            sessions_root.mkdir()
+            path = sessions_root / "rollout-test.jsonl"
             path.write_text(
                 json.dumps(
                     {
@@ -56,17 +58,18 @@ class McpServerTests(unittest.TestCase):
                 )
                 + "\n"
             )
-            response = handle_request(
-                {
-                    "jsonrpc": "2.0",
-                    "id": 6,
-                    "method": "tools/call",
-                    "params": {
-                        "name": "thread_timeline",
-                        "arguments": {"thread_id": str(path), "include_snippets": False},
-                    },
-                }
-            )
+            with patch("quiet_clock.transcript.SESSIONS_ROOT", sessions_root):
+                response = handle_request(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 6,
+                        "method": "tools/call",
+                        "params": {
+                            "name": "thread_timeline",
+                            "arguments": {"thread_id": str(path), "include_snippets": False},
+                        },
+                    }
+                )
         result = result_payload(response)
         self.assertTrue(result["ok"])
         self.assertNotIn("rollout_path", result["thread"])

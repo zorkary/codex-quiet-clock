@@ -36,6 +36,8 @@ Quiet Clock does not:
 
 Timeline tools default to the current thread when the caller passes the hook-injected `session/thread id`. They do not silently fall back to the latest local thread unless `allow_latest=true` is passed explicitly.
 
+Quiet Clock refuses arbitrary transcript paths. Transcript reads are limited to Codex rollout JSONL files under the configured Codex sessions root.
+
 Timeline outputs support:
 
 - `include_snippets=false` to suppress message snippets.

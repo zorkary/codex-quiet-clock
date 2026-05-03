@@ -104,6 +104,29 @@ def text_from_content(content: Any) -> str:
     return ""
 
 
+def path_is_within(child: Path, root: Path) -> bool:
+    try:
+        child.resolve().relative_to(root.resolve())
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def resolve_transcript_path(value: str | os.PathLike[str]) -> str | None:
+    candidate = Path(value).expanduser()
+    try:
+        resolved = candidate.resolve()
+    except OSError:
+        return None
+    if not resolved.exists() or not resolved.is_file():
+        return None
+    if resolved.suffix != ".jsonl" or not resolved.name.startswith("rollout-"):
+        return None
+    if not path_is_within(resolved, SESSIONS_ROOT):
+        return None
+    return str(resolved)
+
+
 def iter_jsonl_records(path: str | os.PathLike[str], max_bytes: int | None = None) -> Iterable[tuple[int, dict[str, Any]]]:
     p = Path(path)
     if not p.exists() or not p.is_file():
@@ -241,8 +264,10 @@ def latest_rollout_file() -> str | None:
 def resolve_thread(thread_id: str | None = None, allow_latest: bool = False) -> ThreadRef | None:
     env_thread = os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID")
     target = thread_id or env_thread or ""
-    if target and Path(target).exists():
-        return ThreadRef(thread_id=Path(target).stem, rollout_path=target)
+    if target:
+        resolved_target = resolve_transcript_path(target)
+        if resolved_target:
+            return ThreadRef(thread_id=Path(resolved_target).stem, rollout_path=resolved_target)
 
     con = state_db_connection()
     if con:
@@ -259,7 +284,9 @@ def resolve_thread(thread_id: str | None = None, allow_latest: bool = False) -> 
             else:
                 row = None
             if row and row[1]:
-                return ThreadRef(thread_id=row[0], rollout_path=row[1], cwd=row[2] or "", title=row[3] or "", updated_at_ms=row[4])
+                rollout_path = resolve_transcript_path(row[1])
+                if rollout_path:
+                    return ThreadRef(thread_id=row[0], rollout_path=rollout_path, cwd=row[2] or "", title=row[3] or "", updated_at_ms=row[4])
         except sqlite3.Error:
             pass
         finally:

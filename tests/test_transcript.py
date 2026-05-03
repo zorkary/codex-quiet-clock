@@ -28,13 +28,22 @@ class TranscriptTests(unittest.TestCase):
             self.assertEqual([item.role for item in items], ["user", "assistant", "system"])
             self.assertEqual(items[2].turn_id, "turn-1")
 
-    def test_resolve_thread_accepts_existing_path(self) -> None:
+    def test_resolve_thread_accepts_existing_session_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            sessions_root = Path(tmp) / "sessions"
+            sessions_root.mkdir()
+            path = sessions_root / "rollout-test.jsonl"
+            path.write_text("")
+            with patch("quiet_clock.transcript.SESSIONS_ROOT", sessions_root):
+                ref = resolve_thread(str(path))
+            self.assertIsNotNone(ref)
+            self.assertEqual(ref.rollout_path, str(path.resolve()))
+
+    def test_resolve_thread_rejects_outside_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "rollout-test.jsonl"
             path.write_text("")
-            ref = resolve_thread(str(path))
-            self.assertIsNotNone(ref)
-            self.assertEqual(ref.rollout_path, str(path))
+            self.assertIsNone(resolve_thread(str(path)))
 
     def test_resolve_thread_does_not_default_to_latest(self) -> None:
         with patch.dict(os.environ, {"CODEX_THREAD_ID": "", "CODEX_SESSION_ID": ""}):
@@ -42,7 +51,9 @@ class TranscriptTests(unittest.TestCase):
 
     def test_find_messages_can_suppress_snippets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "rollout-test.jsonl"
+            sessions_root = Path(tmp) / "sessions"
+            sessions_root.mkdir()
+            path = sessions_root / "rollout-test.jsonl"
             path.write_text(
                 json.dumps(
                     {
@@ -53,7 +64,8 @@ class TranscriptTests(unittest.TestCase):
                 )
                 + "\n"
             )
-            result = find_messages("timing", thread_id=str(path), include_snippets=False)
+            with patch("quiet_clock.transcript.SESSIONS_ROOT", sessions_root):
+                result = find_messages("timing", thread_id=str(path), include_snippets=False)
             self.assertTrue(result["ok"])
             self.assertNotIn("snippet", result["matches"][0])
             self.assertNotIn("rollout_path", result["thread"])

@@ -125,7 +125,7 @@ Codex should use the MCP tools instead of guessing when exact timing or chronolo
 
 ## Privacy Defaults
 
-Timeline tools should receive the session/thread id from the hook context. They do not silently fall back to the latest local thread unless `allow_latest=true` is passed explicitly.
+Timeline tools should receive the session/thread id from the hook context. They do not silently fall back to the latest local thread unless `allow_latest=true` is passed explicitly. They also refuse arbitrary transcript paths; transcript reads are limited to Codex rollout JSONL files under the configured Codex sessions root.
 
 Timeline outputs support:
 

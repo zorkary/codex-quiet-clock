@@ -6,7 +6,7 @@ Quiet Clock is a local read-only Codex extension. Its security model is intentio
 
 Quiet Clock can expose local Codex transcript snippets to the active Codex model when a timeline tool is called. Treat timeline output as private local context. Do not paste or forward transcript-derived output externally without review.
 
-The main risks are accidental over-sharing from transcript snippets and accidental publication of local runtime files. The repo includes privacy and release checks to reduce those risks.
+The main risks are accidental over-sharing from transcript snippets and accidental publication of local runtime files. The repo includes privacy and release checks to reduce those risks. Timeline tools refuse arbitrary transcript paths and only read Codex rollout JSONL files under the configured Codex sessions root.
 
 ## Hard Boundaries
 
