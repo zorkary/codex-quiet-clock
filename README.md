@@ -4,6 +4,9 @@ A local ambient hook + read-only MCP that makes Codex thread timing predictable 
 
 Codex can record timing in local session logs and runtime state, but that timing is not always available to the model as clean thread context. Quiet Clock adds a predictable model-facing layer: a tiny ambient hook for current timing context and a read-only lookup surface for exact chronology when needed. Without a layer like this, agents may infer timing from message order, current environment dates, or file/tool artifacts, but that is not the same as reliable per-message chat chronology. It is intentionally small: no daemon, no network service, no memory system, no background watcher.
 
+Personal project note: this is a personal project by Zackary Skelly. It is not
+affiliated with, sponsored by, or endorsed by Dragonfly or any employer.
+
 ## What It Adds
 
 Quiet Clock has two pieces:
