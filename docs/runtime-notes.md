@@ -41,3 +41,13 @@ Codex `0.130` also exposes more app-server timing and thread-history shape:
 Those APIs point toward a cleaner future implementation where Quiet Clock could query a supported app-server timeline instead of reconstructing timing from local session files. The current implementation stays conservative: read local Codex state, avoid daemons, avoid network services, and do not mutate transcripts.
 
 `codex remote-control` is a separate experimental entrypoint that starts a headless, remotely controllable app-server and connects to ChatGPT remote control infrastructure. It may become important for mobile or hosted control-plane workflows, but Quiet Clock does not require it.
+
+## Future Direction
+
+Quiet Clock should keep the same user-facing shape while allowing the timeline backend to evolve:
+
+- current backend: local Codex session state and rollout JSONL files
+- possible future backend: supported Codex app-server thread APIs
+- stable interface: ambient hook context plus read-only MCP tools
+
+That would let Quiet Clock use the best local Codex timing source available without forcing users to run a separate app-server or remote-control session for normal use.

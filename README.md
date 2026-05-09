@@ -202,7 +202,9 @@ The only intentional writes are install/uninstall/configuration operations.
 
 ## Runtime Notes
 
-Quiet Clock uses hooks and MCP because those extension points are available today. Codex `0.130` also exposes more app-server thread timing and pagination primitives, which is a good sign for a cleaner native shape later. For now, Quiet Clock remains a small local compatibility layer rather than a replacement for runtime-owned timing. See `docs/runtime-notes.md`.
+Quiet Clock uses hooks and MCP because those extension points are available today. Codex `0.130` also exposes more app-server thread and turn timing primitives, which may become a cleaner timeline backend later.
+
+The current hook + read-only MCP interface remains the supported path because it works in the Codex app today and does not require running a separate app-server or remote-control session. See `docs/runtime-notes.md`.
 
 ## Troubleshooting
 
