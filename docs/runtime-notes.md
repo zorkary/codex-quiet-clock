@@ -18,12 +18,26 @@ Quiet Clock is a local implementation of that hook-plus-tool pattern, not a clai
 
 ## Plugin Packaging Status
 
-Codex plugin docs describe bundled MCP servers and lifecycle hook config, but current local validation is mixed on Codex `0.128.0-alpha.1`:
+Codex `0.130.0-alpha.5` moves plugin packaging closer to the shape Quiet Clock wants, but not far enough that plugin install should replace the direct install path yet.
 
-- Direct hook install works.
-- Direct MCP install works.
-- Plugin-packaged MCP works when the plugin is present in the installed plugin cache.
-- Plugin-packaged `UserPromptSubmit` hooks did not execute in `codex exec` during controlled marker-file tests.
-- Local `codex plugin marketplace add` registers the marketplace, but does not appear to install or enable local plugin components by itself.
+- `codex features list` reports `hooks` and `plugins` as stable.
+- `codex features list` reports `plugin_hooks` as under development.
+- Upstream [openai/codex#19705](https://github.com/openai/codex/pull/19705) adds discovery/runtime plumbing for plugin-bundled hooks behind the `plugin_hooks` feature flag.
+- Upstream [openai/codex#21447](https://github.com/openai/codex/pull/21447) makes bundled hooks visible in plugin detail views.
+- Direct hook install works without feature flags.
+- Direct MCP install works without feature flags.
 
-This appears to match upstream issue [openai/codex#16430](https://github.com/openai/codex/issues/16430). Until that runtime path is clearer, Quiet Clock treats plugin packaging as experimental and keeps direct hook/MCP installation as the supported path.
+That means Quiet Clock can keep the plugin bundle as a forward-compatible experiment, but should not make it the primary install flow until plugin hooks are stable by default. The direct hook + MCP scripts remain the supported path.
+
+## Codex App-Server Notes
+
+Codex `0.130` also exposes more app-server timing and thread-history shape:
+
+- `codex app-server --listen ws://127.0.0.1:0` starts a local websocket server bound to loopback.
+- `thread` objects include `createdAt` and `updatedAt`.
+- `turn` objects include `startedAt`, `completedAt`, and `durationMs`.
+- turn item loading supports `notLoaded`, `summary`, and `full` views.
+
+Those APIs point toward a cleaner future implementation where Quiet Clock could query a supported app-server timeline instead of reconstructing timing from local session files. The current implementation stays conservative: read local Codex state, avoid daemons, avoid network services, and do not mutate transcripts.
+
+`codex remote-control` is a separate experimental entrypoint that starts a headless, remotely controllable app-server and connects to ChatGPT remote control infrastructure. It may become important for mobile or hosted control-plane workflows, but Quiet Clock does not require it.

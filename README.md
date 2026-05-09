@@ -87,13 +87,13 @@ codex plugin marketplace add zorkary/codex-quiet-clock
 
 This registers the Quiet Clock plugin marketplace with Codex. The plugin package is self-contained and includes bundled lifecycle config (`./hooks/hooks.json`) plus a bundled stdio MCP server config (`./.mcp.json`).
 
-As of Codex `0.128.0-alpha.1`, live validation confirms the plugin-packaged MCP can load from an installed plugin cache, but plugin-packaged `UserPromptSubmit` hook activation is not yet proven in `codex exec`. This appears to match upstream issue [openai/codex#16430](https://github.com/openai/codex/issues/16430). Use the direct install path above for complete Quiet Clock behavior today.
+As of Codex `0.130.0-alpha.5`, plugin-bundled hook discovery exists behind the under-development `plugin_hooks` feature flag, and plugin detail APIs can surface bundled hooks. That is a real improvement over earlier builds, but the stable path for complete Quiet Clock behavior is still the direct hook + MCP install above. Use plugin packaging only if you are comfortable testing under-development Codex plugin-hook behavior.
 
 Observed plugin-runtime caveats:
 
-- `codex plugin marketplace add` for a local marketplace registers the marketplace in Codex config; it does not, by itself, activate Quiet Clock in `codex exec`.
-- `codex plugin marketplace upgrade` currently rejects local marketplaces because it expects a Git marketplace.
-- A minimal hook-only plugin with `hooks/hooks.json` did not execute its `UserPromptSubmit` hook in `codex exec`, even with the plugin enabled and installed into the expected cache path.
+- `codex features list` reports `hooks` and `plugins` as stable, but `plugin_hooks` as under development.
+- Plugin-bundled hooks may require `--enable plugin_hooks` or equivalent config while this feature is still guarded.
+- `codex plugin marketplace add` registers a marketplace; depending on Codex version and marketplace source, that is not the same as proving the hook fires in every runtime path.
 - The same hook logic works through direct Codex hook configuration.
 
 For now, treat plugin packaging as a compatibility experiment and use the direct installer scripts for the working product.
@@ -202,7 +202,7 @@ The only intentional writes are install/uninstall/configuration operations.
 
 ## Runtime Notes
 
-Quiet Clock uses hooks and MCP because those extension points are available today. In a future runtime, basic message timing may be exposed directly as hidden metadata or a native transcript API; Quiet Clock is a local approximation of that interface. See `docs/runtime-notes.md`.
+Quiet Clock uses hooks and MCP because those extension points are available today. Codex `0.130` also exposes more app-server thread timing and pagination primitives, which is a good sign for a cleaner native shape later. For now, Quiet Clock remains a small local compatibility layer rather than a replacement for runtime-owned timing. See `docs/runtime-notes.md`.
 
 ## Troubleshooting
 
